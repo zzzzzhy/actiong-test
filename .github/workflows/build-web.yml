@@ -15,11 +15,10 @@ on:
         description: 'image version (e.g., 1.0.0)'
         required: true
         default: 'latest'   
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: innet8/ttpos-menu # ghcr.io/your-username/your-repo
-
-
 
 jobs:
   # TRABAJO 1: Compilar el binario del Backend
@@ -41,6 +40,7 @@ jobs:
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
+        working-directory: ttpos-menu
         with:
           node-version: '20'
           cache: 'npm'
