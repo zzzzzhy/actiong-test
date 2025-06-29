@@ -1,0 +1,36 @@
+name: Remote Server Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      version: 
+        description: 'image version (e.g., 1.0.0)'
+        required: true
+        default: 'latest'   
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 步骤2：配置 SSH 私钥和主机信任
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+      - name: Run Deployment Commands
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+              "
+              docker pull ghcr.io/innet8/ttpos-menu/frontend:${{ github.event.inputs.version }}
+              docker pull ghcr.io/innet8/ttpos-menu/backend:${{ github.event.inputs.version }}
+              docker pull ghcr.io/innet8/ttpos-menu/ai:${{ github.event.inputs.version }}
+              docker tag ghcr.io/innet8/ttpos-menu/frontend:${{ github.event.inputs.version }} ghcr.io/innet8/ttpos-menu/frontend:latest
+              docker tag ghcr.io/innet8/ttpos-menu/backend:${{ github.event.inputs.version }} ghcr.io/innet8/ttpos-menu/backend:latest
+              docker tag ghcr.io/innet8/ttpos-menu/ai:${{ github.event.inputs.version }} ghcr.io/innet8/ttpos-menu/ai:latest
+              cd /root/ttpos-menu
+              git pull
+              docker compose up -d
+              "
