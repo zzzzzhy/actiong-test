@@ -38,7 +38,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.TARGET_REPO_TOKEN }}
 
       - name: Build and push AI image
         uses: docker/build-push-action@v5

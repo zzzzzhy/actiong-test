@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-        working-directory: ttpos-menu
+          cache-dependency-path: ttpos-menu
 
       
       - name: Install dependencies
@@ -63,7 +63,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.TARGET_REPO_TOKEN }}
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
