@@ -40,10 +40,11 @@ jobs:
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
-        working-directory: ttpos-menu
         with:
           node-version: '20'
           cache: 'npm'
+        working-directory: ttpos-menu
+
       
       - name: Install dependencies
         run: |
