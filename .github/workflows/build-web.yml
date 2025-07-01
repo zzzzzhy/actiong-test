@@ -6,11 +6,11 @@ on:
       branch: 
         description: 'branch (e.g., release)'
         required: true
-        default: 'dev'
+        default: 'main'
       api_url: 
         description: 'api_url (e.g., release)'
         required: true
-        default: 'https://scan.ttpos.com/api'       
+        default: 'https://d.cc/api'       
       version: 
         description: 'image version (e.g., 1.0.0)'
         required: true
