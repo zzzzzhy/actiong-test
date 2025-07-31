@@ -4,33 +4,80 @@ on:
   workflow_dispatch:
     inputs:
       version: 
-        description: 'image version (e.g., 1.0.0)'
+        description: 'Image version (e.g., 1.0.0)'
         required: true
-        default: 'latest'   
+        default: 'latest'
+      services:
+        description: 'Select services to deploy (use comma to separate, e.g., WEB,server)'
+        required: true
+        default: 'web,server,ai'
+      environment:
+        description: 'Deployment environment (e.g., dev, prod)'
+        required: true
+        default: 'dev'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 步骤2：配置 SSH 私钥和主机信任
+      - name: Parse Selected Services
+        id: parse
+        run: |
+          echo "Selected services: ${{ github.event.inputs.services }}"
+          echo "WEB=$(echo '${{ github.event.inputs.services }}' | grep -q 'web' && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "SERVER=$(echo '${{ github.event.inputs.services }}' | grep -q 'server' && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "AI=$(echo '${{ github.event.inputs.services }}' | grep -q 'ai' && echo true || echo false)" >> $GITHUB_OUTPUT
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            ssh-keyscan "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+            echo "HOST=${{ secrets.SSH_HOST }}" >> $GITHUB_ENV
+            echo "USER=${{ secrets.SSH_USER }}" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" = "dev" ]; then
+            echo "${{ secrets.DEV_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            ssh-keyscan "${{ secrets.DEV_SSH_HOST }}" >> ~/.ssh/known_hosts
+            echo "HOST=${{ secrets.DEV_SSH_HOST }}" >> $GITHUB_ENV
+            echo "USER=${{ secrets.DEV_SSH_USER }}" >> $GITHUB_ENV
+          else
+            echo "Unknown environment: ${{ github.event.inputs.environment }}"
+            exit 1
+          fi
+
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
       - name: Run Deployment Commands
         run: |
-          ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-              "
-              docker pull ghcr.io/innet8/ttpos-menu/frontend:${{ github.event.inputs.version }}
-              docker pull ghcr.io/innet8/ttpos-menu/backend:${{ github.event.inputs.version }}
-              docker pull ghcr.io/innet8/ttpos-menu/ai:${{ github.event.inputs.version }}
-              docker tag ghcr.io/innet8/ttpos-menu/frontend:${{ github.event.inputs.version }} ghcr.io/innet8/ttpos-menu/frontend:latest
-              docker tag ghcr.io/innet8/ttpos-menu/backend:${{ github.event.inputs.version }} ghcr.io/innet8/ttpos-menu/backend:latest
-              docker tag ghcr.io/innet8/ttpos-menu/ai:${{ github.event.inputs.version }} ghcr.io/innet8/ttpos-menu/ai:latest
-              cd /root/ttpos-menu
-              git pull
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${USER}@${HOST}" <<EOF
+            set -e
+
+            VERSION="${{ github.event.inputs.version }}"
+
+            # Pull and tag images based on selected services
+            ${{
+              steps.parse.outputs.WEB == 'true' && 
+              format('docker pull ghcr.io/innet8/ttpos-menu/frontend:{0} && docker tag ghcr.io/innet8/ttpos-menu/frontend:{0} ghcr.io/innet8/ttpos-menu/frontend:latest', github.event.inputs.version)
+            }}
+            
+            ${{
+              steps.parse.outputs.SERVER == 'true' && 
+              format('docker pull ghcr.io/innet8/ttpos-menu/backend:{0} && docker tag ghcr.io/innet8/ttpos-menu/backend:{0} ghcr.io/innet8/ttpos-menu/backend:latest', github.event.inputs.version)
+            }}
+
+            ${{
+              steps.parse.outputs.AI == 'true' && 
+              format('docker pull ghcr.io/innet8/ttpos-menu/ai:{0} && docker tag ghcr.io/innet8/ttpos-menu/ai:{0} ghcr.io/innet8/ttpos-menu/ai:latest', github.event.inputs.version)
+            }}
+
+            cd /root/ttpos-menu
+            git pull
+            if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
+              docker compose -f docker-compose-dev.yml up -d
+              docker restart menu-nginx
+            elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
               docker compose up -d
-              "
+            fi
+          EOF
