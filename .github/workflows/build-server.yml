@@ -10,7 +10,7 @@ on:
       version: 
         description: 'image version (e.g., 1.0.0)'
         required: true
-        default: 'latest'  
+        default: 'dev'  
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: innet8/ttpos-menu # ghcr.io/your-username/your-repo
