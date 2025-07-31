@@ -6,15 +6,15 @@ on:
       branch: 
         description: 'branch (e.g., release)'
         required: true
-        default: 'main'
+        default: 'dev'
       api_url: 
         description: 'api_url (e.g., release)'
         required: true
-        default: 'https://d.cc/api'       
+        default: 'https://dev.d.cc/api'       
       version: 
         description: 'image version (e.g., 1.0.0)'
         required: true
-        default: 'latest'   
+        default: 'dev'   
 
 env:
   REGISTRY: ghcr.io
