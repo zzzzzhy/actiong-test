@@ -36,7 +36,24 @@ jobs:
           echo "WEB=$(echo '${{ github.event.inputs.services }}' | grep -q 'web' && echo true || echo false)" >> $GITHUB_OUTPUT
           echo "SERVER=$(echo '${{ github.event.inputs.services }}' | grep -q 'server' && echo true || echo false)" >> $GITHUB_OUTPUT
           echo "AI=$(echo '${{ github.event.inputs.services }}' | grep -q 'ai' && echo true || echo false)" >> $GITHUB_OUTPUT
+          
+      - name: Check permission for production deploy
+        if: github.event.inputs.environment == 'production'
+        run: |
+          ALLOWED_USERS="${{ secrets.ALLOWED_DEPLOY_USERS }}"
 
+          echo "Actor: ${{ github.actor }}"
+
+          for user in "${ALLOWED_USERS[@]}"; do
+            if [[ "$user" == "${{ github.actor }}" ]]; then
+              echo "✅ User authorized to deploy to production."
+              exit 0
+            fi
+          done
+
+          echo "❌ User '${{ github.actor }}' is NOT authorized to deploy to production."
+          exit 1
+          
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
