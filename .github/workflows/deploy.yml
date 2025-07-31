@@ -97,13 +97,15 @@ jobs:
               steps.parse.outputs.AI == 'true' && 
               format('docker pull ghcr.io/innet8/ttpos-menu/ai:{0} && docker tag ghcr.io/innet8/ttpos-menu/ai:{0} ghcr.io/innet8/ttpos-menu/ai:latest', github.event.inputs.version)
             }}
-
-            cd /root/ttpos-menu
+            echo "进入目录"
+            cd ttpos-menu
             git pull
+            echo "拉取代码完成"
             if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
               docker compose -f docker-compose-dev.yml up -d
               docker restart menu-nginx
             elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+              echo "执行docker"
               docker compose up -d
             fi
           EOF
