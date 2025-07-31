@@ -82,30 +82,31 @@ jobs:
 
             VERSION="${{ github.event.inputs.version }}"
 
-            # Pull and tag images based on selected services
-            ${{
-              steps.parse.outputs.WEB == 'true' && 
-              format('docker pull ghcr.io/innet8/ttpos-menu/frontend:{0} && docker tag ghcr.io/innet8/ttpos-menu/frontend:{0} ghcr.io/innet8/ttpos-menu/frontend:latest', github.event.inputs.version)
-            }}
-            
-            ${{
-              steps.parse.outputs.SERVER == 'true' && 
-              format('docker pull ghcr.io/innet8/ttpos-menu/backend:{0} && docker tag ghcr.io/innet8/ttpos-menu/backend:{0} ghcr.io/innet8/ttpos-menu/backend:latest', github.event.inputs.version)
-            }}
+            if [ "${{ steps.parse.outputs.WEB }}" = "true" ]; then
+              echo "Deploying web..."
+              docker pull ghcr.io/innet8/ttpos-menu/frontend:${VERSION}
+              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/frontend:${VERSION} ghcr.io/innet8/ttpos-menu/frontend:latest
+            fi
 
-            ${{
-              steps.parse.outputs.AI == 'true' && 
-              format('docker pull ghcr.io/innet8/ttpos-menu/ai:{0} && docker tag ghcr.io/innet8/ttpos-menu/ai:{0} ghcr.io/innet8/ttpos-menu/ai:latest', github.event.inputs.version)
-            }}
-            echo "进入目录"
+            if [ "${{ steps.parse.outputs.SERVER }}" = "true" ]; then
+              echo "Deploying server..."
+              docker pull ghcr.io/innet8/ttpos-menu/backend:${VERSION}
+              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/backend:${VERSION} ghcr.io/innet8/ttpos-menu/backend:latest
+            fi
+
+            if [ "${{ steps.parse.outputs.AI }}" = "true" ]; then
+              echo "Deploying ai..."
+              docker pull ghcr.io/innet8/ttpos-menu/ai:${VERSION}
+              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/ai:${VERSION} ghcr.io/innet8/ttpos-menu/ai:latest
+            fi
+
             cd ttpos-menu
             git pull
-            echo "拉取代码完成"
             if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
               docker compose -f docker-compose-dev.yml up -d
               docker restart menu-nginx
             elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-              echo "执行docker"
               docker compose up -d
             fi
           EOF
+
