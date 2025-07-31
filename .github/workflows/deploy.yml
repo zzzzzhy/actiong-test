@@ -38,7 +38,7 @@ jobs:
           echo "AI=$(echo '${{ github.event.inputs.services }}' | grep -q 'ai' && echo true || echo false)" >> $GITHUB_OUTPUT
           
       - name: Check permission for production deploy
-        if: github.event.inputs.environment == 'production'
+        if: github.event.inputs.environment == 'prod'
         run: |
           ALLOWED_USERS="${{ secrets.ALLOWED_DEPLOY_USERS }}"
 
