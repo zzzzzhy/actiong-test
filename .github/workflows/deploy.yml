@@ -84,20 +84,20 @@ jobs:
 
             if [ "${{ steps.parse.outputs.WEB }}" = "true" ]; then
               echo "Deploying web..."
-              docker pull ghcr.io/innet8/ttpos-menu/frontend:${VERSION}
-              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/frontend:${VERSION} ghcr.io/innet8/ttpos-menu/frontend:latest
+              docker pull ghcr.io/innet8/ttpos-menu/frontend:\$VERSION
+              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/frontend:\$VERSION ghcr.io/innet8/ttpos-menu/frontend:latest
             fi
 
             if [ "${{ steps.parse.outputs.SERVER }}" = "true" ]; then
               echo "Deploying server..."
-              docker pull ghcr.io/innet8/ttpos-menu/backend:${VERSION}
-              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/backend:${VERSION} ghcr.io/innet8/ttpos-menu/backend:latest
+              docker pull ghcr.io/innet8/ttpos-menu/backend:\$VERSION
+              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/backend:\$VERSION ghcr.io/innet8/ttpos-menu/backend:latest
             fi
 
             if [ "${{ steps.parse.outputs.AI }}" = "true" ]; then
               echo "Deploying ai..."
-              docker pull ghcr.io/innet8/ttpos-menu/ai:${VERSION}
-              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/ai:${VERSION} ghcr.io/innet8/ttpos-menu/ai:latest
+              docker pull ghcr.io/innet8/ttpos-menu/ai:\$VERSION
+              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/ai:\$VERSION ghcr.io/innet8/ttpos-menu/ai:latest
             fi
 
             cd ttpos-menu
