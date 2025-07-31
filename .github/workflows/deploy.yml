@@ -8,8 +8,17 @@ on:
         required: true
         default: 'latest'
       services:
-        description: 'Select services to deploy (use comma to separate, e.g., WEB,server)'
+        description: 'Select services to deploy'
         required: true
+        type: choice
+        options:
+          - web
+          - server
+          - ai
+          - web,server
+          - web,ai
+          - server,ai
+          - web,server,ai
         default: 'web,server,ai'
       environment:
         description: 'Deployment environment (e.g., dev, prod)'
