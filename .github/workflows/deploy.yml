@@ -127,9 +127,11 @@ jobs:
             git pull
             if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
               docker compose -f docker-compose-dev.yml up -d
-              docker restart menu-nginx
+              
             elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-              docker compose up -d
+              docker compose -f docker-compose-prod.yml --env-file .env.local up -d
+              
             fi
+            docker restart menu-nginx
           EOF
 
