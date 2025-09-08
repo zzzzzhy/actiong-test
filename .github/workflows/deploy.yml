@@ -74,8 +74,28 @@ jobs:
           fi
 
           chmod 600 ~/.ssh/id_rsa
-
+          
+      - uses: 'google-github-actions/auth@v3'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+      - uses: 'google-github-actions/deploy-cloudrun@v3'
+        if: github.event.inputs.environment == 'dev' && steps.parse.outputs.WEB == 'true'
+        with:
+          image: 'asia-southeast1-docker.pkg.dev/diyl-407103/ttpos-menu/ghcr.io/innet8/ttpos-menu/frontend:dev'
+          service: 'frontend'
+      - uses: 'google-github-actions/deploy-cloudrun@v3'
+        if: github.event.inputs.environment == 'dev' && steps.parse.outputs.SERVER == 'true'
+        with:
+          image: 'asia-southeast1-docker.pkg.dev/diyl-407103/ttpos-menu/ghcr.io/innet8/ttpos-menu/backend:dev'
+          service: 'backend'
+      - uses: 'google-github-actions/deploy-cloudrun@v3'
+        if: github.event.inputs.environment == 'dev' && steps.parse.outputs.AI == 'true'
+        with:
+          image: 'asia-southeast1-docker.pkg.dev/diyl-407103/ttpos-menu/ghcr.io/innet8/ttpos-menu/ai:dev'
+          service: 'ai'
+          
       - name: Run Deployment Commands
+        if: github.event.inputs.environment == 'prod'
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${USER}@${HOST}" <<EOF
             set -e
