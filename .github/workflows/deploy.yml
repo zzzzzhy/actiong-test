@@ -83,16 +83,19 @@ jobs:
         with:
           image: 'asia-southeast1-docker.pkg.dev/diyl-407103/ttpos-menu/ghcr.io/innet8/ttpos-menu/frontend:dev'
           service: 'frontend'
+          region: 'asia-southeast1'
       - uses: 'google-github-actions/deploy-cloudrun@v3'
         if: github.event.inputs.environment == 'dev' && steps.parse.outputs.SERVER == 'true'
         with:
           image: 'asia-southeast1-docker.pkg.dev/diyl-407103/ttpos-menu/ghcr.io/innet8/ttpos-menu/backend:dev'
           service: 'backend'
+          region: 'asia-southeast1'
       - uses: 'google-github-actions/deploy-cloudrun@v3'
         if: github.event.inputs.environment == 'dev' && steps.parse.outputs.AI == 'true'
         with:
           image: 'asia-southeast1-docker.pkg.dev/diyl-407103/ttpos-menu/ghcr.io/innet8/ttpos-menu/ai:dev'
           service: 'ai'
+          region: 'asia-southeast1'
           
       - name: Run Deployment Commands
         if: github.event.inputs.environment == 'prod'
