@@ -98,7 +98,7 @@ jobs:
       #     region: 'asia-southeast1'
           
       - name: Run Deployment Commands
-        if: github.event.inputs.environment == 'prod'
+        
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${USER}@${HOST}" <<EOF
             set -e
